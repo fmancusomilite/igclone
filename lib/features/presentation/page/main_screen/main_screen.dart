@@ -9,7 +9,8 @@ import 'package:igclone/features/presentation/page/profile/profile_page.dart';
 import 'package:igclone/features/presentation/page/search/search_page.dart';
 
 class MainScreen extends StatefulWidget {
-  const MainScreen({Key? key}) : super(key: key);
+  final String uid;
+  const MainScreen({Key? key, required this.uid}) : super(key: key);
 
   @override
   State<MainScreen> createState() => _MainScreenState();

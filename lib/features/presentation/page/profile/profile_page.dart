@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:igclone/consts.dart';
+import 'package:igclone/features/presentation/cubit/auth/auth_cubit.dart';
 import 'package:igclone/features/presentation/page/profile/edit_profile_page.dart';
 
 class ProfilePage extends StatelessWidget {
@@ -219,12 +221,22 @@ class ProfilePage extends StatelessWidget {
                   sizeVer(7),
                   Padding(
                     padding: const EdgeInsets.only(left: 10.0),
-                    child: Text(
-                      "Logout",
-                      style: TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 16,
-                        color: primaryColor,
+                    child: InkWell(
+                      onTap: () {
+                        BlocProvider.of<AuthCubit>(context).loggedOut();
+                        Navigator.pushNamedAndRemoveUntil(
+                          context,
+                          PageConst.signInPage,
+                          (route) => false,
+                        );
+                      },
+                      child: Text(
+                        "Logout",
+                        style: TextStyle(
+                          fontWeight: FontWeight.w500,
+                          fontSize: 16,
+                          color: primaryColor,
+                        ),
                       ),
                     ),
                   ),
