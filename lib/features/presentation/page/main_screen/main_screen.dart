@@ -1,7 +1,9 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_icons/flutter_icons.dart';
 import 'package:igclone/consts.dart';
+import 'package:igclone/features/presentation/cubit/user/get_single_user/get_single_user_cubit.dart';
 import 'package:igclone/features/presentation/page/activity/activity_page.dart';
 import 'package:igclone/features/presentation/page/home/home_page.dart';
 import 'package:igclone/features/presentation/page/post/upload_post_page.dart';
@@ -10,6 +12,7 @@ import 'package:igclone/features/presentation/page/search/search_page.dart';
 
 class MainScreen extends StatefulWidget {
   final String uid;
+
   const MainScreen({Key? key, required this.uid}) : super(key: key);
 
   @override
@@ -22,6 +25,7 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   void initState() {
+    BlocProvider.of<GetSingleUserCubit>(context).getSingleUser(uid: widget.uid);
     pageController = PageController();
     super.initState();
   }
@@ -44,60 +48,70 @@ class _MainScreenState extends State<MainScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: backGroundColor,
-      bottomNavigationBar: CupertinoTabBar(
-        backgroundColor: backGroundColor,
-        items: const [
-          BottomNavigationBarItem(
-            icon: Icon(
-              MaterialCommunityIcons.home_variant,
-              color: primaryColor,
+    return BlocBuilder<GetSingleUserCubit, GetSingleUserState>(
+      builder: (context, getSingleUserState) {
+        if (getSingleUserState is GetSingleUserLoaded) {
+          final currentUser = getSingleUserState.user;
+          return Scaffold(
+            backgroundColor: backGroundColor,
+            bottomNavigationBar: CupertinoTabBar(
+              backgroundColor: backGroundColor,
+              items: const [
+                BottomNavigationBarItem(
+                  icon: Icon(
+                    MaterialCommunityIcons.home_variant,
+                    color: primaryColor,
+                  ),
+                  label: "",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(
+                    Ionicons.md_search,
+                    color: primaryColor,
+                  ),
+                  label: "",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(
+                    Ionicons.md_add_circle,
+                    color: primaryColor,
+                  ),
+                  label: "",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(
+                    Icons.favorite,
+                    color: primaryColor,
+                  ),
+                  label: "",
+                ),
+                BottomNavigationBarItem(
+                  icon: Icon(
+                    Icons.account_circle_outlined,
+                    color: primaryColor,
+                  ),
+                  label: "",
+                ),
+              ],
+              onTap: navigationTapped,
             ),
-            label: "",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Ionicons.md_search,
-              color: primaryColor,
+            body: PageView(
+              controller: pageController,
+              onPageChanged: onPageChanged,
+              children: [
+                HomePage(),
+                SearchPage(),
+                UploadPostPage(currentUser: currentUser),
+                ActivityPage(),
+                ProfilePage(currentUser: currentUser),
+              ],
             ),
-            label: "",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Ionicons.md_add_circle,
-              color: primaryColor,
-            ),
-            label: "",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.favorite,
-              color: primaryColor,
-            ),
-            label: "",
-          ),
-          BottomNavigationBarItem(
-            icon: Icon(
-              Icons.account_circle_outlined,
-              color: primaryColor,
-            ),
-            label: "",
-          ),
-        ],
-        onTap: navigationTapped,
-      ),
-      body: PageView(
-        controller: pageController,
-        onPageChanged: onPageChanged,
-        children: const [
-          HomePage(),
-          SearchPage(),
-          UploadPage(),
-          ActivityPage(),
-          ProfilePage(),
-        ],
-      ),
+          );
+        }
+        return Center(
+          child: CircularProgressIndicator(),
+        );
+      },
     );
   }
 }

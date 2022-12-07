@@ -14,7 +14,7 @@ Future main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
   await di.init();
-  runApp(const MyApp());
+  runApp(MyApp());
 }
 
 class MyApp extends StatelessWidget {
@@ -30,6 +30,7 @@ class MyApp extends StatelessWidget {
         BlocProvider(create: (_) => di.sl<GetSingleUserCubit>()),
       ],
       child: MaterialApp(
+        locale: Locale('it', 'IT'),
         debugShowCheckedModeBanner: false,
         title: "Instagram Clone",
         darkTheme: ThemeData.dark(),

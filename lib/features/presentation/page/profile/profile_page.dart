@@ -1,11 +1,15 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:igclone/consts.dart';
+import 'package:igclone/features/domain/entities/user/user_entity.dart';
 import 'package:igclone/features/presentation/cubit/auth/auth_cubit.dart';
 import 'package:igclone/features/presentation/page/profile/edit_profile_page.dart';
+import 'package:igclone/profile_widget.dart';
 
 class ProfilePage extends StatelessWidget {
-  const ProfilePage({Key? key}) : super(key: key);
+  final UserEntity currentUser;
+
+  const ProfilePage({Key? key, required this.currentUser}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
@@ -15,7 +19,7 @@ class ProfilePage extends StatelessWidget {
         backgroundColor: backGroundColor,
         centerTitle: false,
         title: Text(
-          "Username",
+          "${currentUser.username}",
           style: TextStyle(
             color: primaryColor,
           ),
@@ -47,9 +51,9 @@ class ProfilePage extends StatelessWidget {
                   Container(
                     width: 80,
                     height: 80,
-                    decoration: BoxDecoration(
-                      color: secondaryColor,
-                      shape: BoxShape.circle,
+                    child: ClipRRect(
+                      borderRadius: BorderRadius.circular(40),
+                      child: profileWidget(imageUrl: currentUser.profileUrl),
                     ),
                   ),
                   Row(
@@ -57,7 +61,7 @@ class ProfilePage extends StatelessWidget {
                       Column(
                         children: [
                           Text(
-                            "0",
+                            "${currentUser.totalPosts}",
                             style: TextStyle(
                               color: primaryColor,
                               fontWeight: FontWeight.bold,
@@ -76,7 +80,7 @@ class ProfilePage extends StatelessWidget {
                       Column(
                         children: [
                           Text(
-                            "54",
+                            "${currentUser.totalFollowers}",
                             style: TextStyle(
                               color: primaryColor,
                               fontWeight: FontWeight.bold,
@@ -95,7 +99,7 @@ class ProfilePage extends StatelessWidget {
                       Column(
                         children: [
                           Text(
-                            "101",
+                            "${currentUser.totalFollowing}",
                             style: TextStyle(
                               color: primaryColor,
                               fontWeight: FontWeight.bold,
@@ -116,7 +120,7 @@ class ProfilePage extends StatelessWidget {
               ),
               sizeVer(10),
               Text(
-                "Name",
+                "${currentUser.name == "" ? currentUser.username : currentUser.name}",
                 style: TextStyle(
                   color: primaryColor,
                   fontWeight: FontWeight.bold,
@@ -124,7 +128,7 @@ class ProfilePage extends StatelessWidget {
               ),
               sizeVer(10),
               Text(
-                "The bio of user",
+                "${currentUser.bio}",
                 style: TextStyle(
                   color: primaryColor,
                 ),
@@ -195,13 +199,8 @@ class ProfilePage extends StatelessWidget {
                         Navigator.pushNamed(
                           context,
                           PageConst.editProfilePage,
+                          arguments: currentUser,
                         );
-                        /*Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => EditProfilePage(),
-                          ),
-                        );*/
                       },
                       child: Text(
                         "Edit Profile",

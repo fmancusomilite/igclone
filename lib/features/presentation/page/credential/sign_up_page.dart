@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:flutter_svg/flutter_svg.dart';
@@ -9,6 +11,8 @@ import 'package:igclone/features/presentation/page/credential/sign_in_page.dart'
 import 'package:igclone/features/presentation/page/main_screen/main_screen.dart';
 import 'package:igclone/features/presentation/widgets/button_container_widget.dart';
 import 'package:igclone/features/presentation/widgets/form_container_widget.dart';
+import 'package:igclone/profile_widget.dart';
+import 'package:image_picker/image_picker.dart';
 
 class SignUpPage extends StatefulWidget {
   const SignUpPage({Key? key}) : super(key: key);
@@ -23,7 +27,7 @@ class _SignUpPageState extends State<SignUpPage> {
   TextEditingController _passwordController = TextEditingController();
   TextEditingController _bioController = TextEditingController();
 
-  bool _isSigningIn = false;
+  bool _isSigningUp = false;
 
   @override
   void dispose() {
@@ -32,6 +36,25 @@ class _SignUpPageState extends State<SignUpPage> {
     _usernameController.dispose();
     _bioController.dispose();
     super.dispose();
+  }
+
+  File? _image;
+
+  Future selectImage() async {
+    try {
+      final pickedFile =
+          await ImagePicker.platform.getImage(source: ImageSource.gallery);
+
+      setState(() {
+        if (pickedFile != null) {
+          _image = File(pickedFile.path);
+        } else {
+          print("no image has been selected");
+        }
+      });
+    } catch (e) {
+      toast("some error occured $e");
+    }
   }
 
   @override
@@ -43,34 +66,31 @@ class _SignUpPageState extends State<SignUpPage> {
         resizeToAvoidBottomInset: false,
         backgroundColor: backGroundColor,
         body: BlocConsumer<CredentialCubit, CredentialState>(
-          listener: (context, credentialState){
-            if(credentialState is CredentialSuccess){
-              BlocProvider.of<AuthCubit>(context).loggedIn();
-            }
-            if(credentialState is CredentialFailure){
-              toast("Invalid Email and Password");
-            }
-          },
-          builder: (context, credentialState){
-            if(credentialState is CredentialSuccess){
-              return BlocBuilder<AuthCubit, AuthState>(
-                builder: (context, authState){
-                  if(authState is Authenticated){
-                    return MainScreen(uid: authState.uid);
-                  } else {
-                    return _bodyWidget();
-                  }
-                }
-              );
-            }
-            return _bodyWidget();
+            listener: (context, credentialState) {
+          if (credentialState is CredentialSuccess) {
+            BlocProvider.of<AuthCubit>(context).loggedIn();
           }
-        ),
+          if (credentialState is CredentialFailure) {
+            toast("Invalid Email and Password");
+          }
+        }, builder: (context, credentialState) {
+          if (credentialState is CredentialSuccess) {
+            return BlocBuilder<AuthCubit, AuthState>(
+                builder: (context, authState) {
+              if (authState is Authenticated) {
+                return MainScreen(uid: authState.uid);
+              } else {
+                return _bodyWidget();
+              }
+            });
+          }
+          return _bodyWidget();
+        }),
       ),
     );
   }
 
-  _bodyWidget(){
+  _bodyWidget() {
     return Padding(
       padding: const EdgeInsets.symmetric(
         horizontal: 10.0,
@@ -95,17 +115,16 @@ class _SignUpPageState extends State<SignUpPage> {
                 Container(
                   width: 60,
                   height: 60,
-                  decoration: BoxDecoration(
-                    color: secondaryColor,
+                  child: ClipRRect(
                     borderRadius: BorderRadius.circular(30),
+                    child: profileWidget(image: _image),
                   ),
-                  child: Image.asset("assets/icon.png"),
                 ),
                 Positioned(
                   right: -10,
                   bottom: -15,
                   child: IconButton(
-                    onPressed: () {},
+                    onPressed: selectImage,
                     icon: Icon(
                       Icons.add_a_photo,
                       color: blueColor,
@@ -144,6 +163,27 @@ class _SignUpPageState extends State<SignUpPage> {
               _signUpUser();
             },
           ),
+          sizeVer(10),
+          _isSigningUp == true
+              ? Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Text(
+                      "Please wait",
+                      style: TextStyle(
+                        color: primaryColor,
+                        fontSize: 16,
+                        fontWeight: FontWeight.w200,
+                      ),
+                    ),
+                    sizeHor(10),
+                    CircularProgressIndicator(),
+                  ],
+                )
+              : Container(
+                  height: 0,
+                  width: 0,
+                ),
           Flexible(
             child: Container(),
             flex: 2,
@@ -175,27 +215,6 @@ class _SignUpPageState extends State<SignUpPage> {
               ),
             ],
           ),
-          sizeVer(10),
-          _isSigningIn == true
-              ? Row(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Please wait",
-                style: TextStyle(
-                  color: primaryColor,
-                  fontSize: 16,
-                  fontWeight: FontWeight.w200,
-                ),
-              ),
-              sizeHor(10),
-              CircularProgressIndicator(),
-            ],
-          )
-              : Container(
-            height: 0,
-            width: 0,
-          ),
         ],
       ),
     );
@@ -203,7 +222,7 @@ class _SignUpPageState extends State<SignUpPage> {
 
   void _signUpUser() {
     setState(() {
-      _isSigningIn = true;
+      _isSigningUp = true;
     });
     BlocProvider.of<CredentialCubit>(context)
         .signUpUser(
@@ -220,6 +239,7 @@ class _SignUpPageState extends State<SignUpPage> {
             website: "",
             following: [],
             name: "",
+            imageFile: _image,
           ),
         )
         .then((value) => _clear());
@@ -231,7 +251,7 @@ class _SignUpPageState extends State<SignUpPage> {
       _bioController.clear();
       _passwordController.clear();
       _emailController.clear();
-      _isSigningIn = false;
+      _isSigningUp = false;
     });
   }
 }
